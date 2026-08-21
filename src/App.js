@@ -24,46 +24,43 @@ function clampNonNegative(v) {
   return n;
 }
 
-function getFinassetsInOutRate(turnover) {
+export function getFinassetsInOutRate(turnover) {
   if (turnover <= 1_000_000) return 0.0040;
   if (turnover <= 6_000_000) return 0.0030;
   if (turnover <= 10_000_000) return 0.0025;
   return 0.0020;
 }
 
-function getOtherPSPDepositRate(turnover) {
+export function getOtherPSPDepositRate(turnover) {
   if (turnover <= 1_176_470) return 0.0050;
   if (turnover <= 5_882_353) return 0.0045;
   if (turnover <= 11_764_706) return 0.0040;
   return 0.0035;
 }
 
-function getOtherPSPWithdrawRate(turnover) {
-  if (turnover <= 1_176_470) return 0.0035;
-  if (turnover <= 5_882_353) return 0.0025;
-  if (turnover <= 11_764_706) return 0.0020;
-  return 0.0010;
+export function getOtherPSPWithdrawRate(turnover) {
+  if (turnover <= 1_000_000) return 0.0045;
+  if (turnover <= 6_000_000) return 0.0035;
+  if (turnover <= 10_000_000) return 0.0030;
+  return 0.0025;
 }
 
-function getOtherPSPExchangeFullRate(turnover) {
+export function getOtherPSPExchangeFullRate(turnover) {
   if (turnover <= 1_176_470) return 0.0060;
   if (turnover <= 5_882_353) return 0.0055;
   if (turnover <= 11_764_706) return 0.0050;
   return 0.0040;
 }
 
-function getOtherPSPAutoConvertRate(turnover) {
+export function getOtherPSPAutoConvertRate(turnover) {
   if (turnover <= 1_176_470) return 0.0100;
   if (turnover <= 5_882_353) return 0.0095;
   if (turnover <= 11_764_706) return 0.0090;
   return 0.0085;
 }
 
-const FIN_EXCH_FULL = 0.0020;
-const FIN_AUTO = 0.0020;
-const FIN_SEPA = 0.0130;
-const OTHER_SEPA = 0.0200;
-
+export const FIN_EXCH_FULL = 0.0020;
+export const FIN_AUTO = 0.0020;
 const ORANGE = "rgb(255 109 0)";
 
 const Field = ({ label, id, value, onChange, hint, required }) => (
@@ -119,16 +116,13 @@ export default function CryptoFeeCalculator() {
   const [outVol, setOutVol] = useState("");
   const [exchVol, setExchVol] = useState("");
   const [autoVol, setAutoVol] = useState("");
-  const [sepaVol, setSepaVol] = useState("");
 
   const inNum = inVol === "" ? 0 : clampNonNegative(inVol);
   const outNum = outVol === "" ? 0 : clampNonNegative(outVol);
   const exchNum = exchVol === "" ? 0 : clampNonNegative(exchVol);
   const autoNum = autoVol === "" ? 0 : clampNonNegative(autoVol);
-  const sepaNum = sepaVol === "" ? 0 : clampNonNegative(sepaVol);
-
   const requiredEmpty = inVol === "" || outVol === "";
-  const turnover = useMemo(() => inNum + outNum + sepaNum, [inNum, outNum, sepaNum]);
+  const turnover = useMemo(() => inNum + outNum, [inNum, outNum]);
 
   const rates = useMemo(() => {
     const finInOut = getFinassetsInOutRate(turnover);
@@ -142,14 +136,12 @@ export default function CryptoFeeCalculator() {
         withdraw: finInOut,
         exchFull: FIN_EXCH_FULL,
         auto: FIN_AUTO,
-        sepa: FIN_SEPA,
       },
       other: {
         deposit: otherDep,
         withdraw: otherWd,
         exchFull: otherExFull,
         auto: otherAuto,
-        sepa: OTHER_SEPA,
       },
     };
   }, [turnover]);
@@ -160,24 +152,22 @@ export default function CryptoFeeCalculator() {
       withdraw: outNum * rates.fin.withdraw,
       exchFull: exchNum * rates.fin.exchFull,
       auto: autoNum * rates.fin.auto,
-      sepa: sepaNum * rates.fin.sepa,
     };
-    fin.total = fin.deposit + fin.withdraw + fin.exchFull + fin.auto + fin.sepa;
+    fin.total = fin.deposit + fin.withdraw + fin.exchFull + fin.auto;
 
     const other = {
       deposit: inNum * rates.other.deposit,
       withdraw: outNum * rates.other.withdraw,
       exchFull: exchNum * rates.other.exchFull,
       auto: autoNum * rates.other.auto,
-      sepa: sepaNum * rates.other.sepa,
     };
-    other.total = other.deposit + other.withdraw + other.exchFull + other.auto + other.sepa;
+    other.total = other.deposit + other.withdraw + other.exchFull + other.auto;
 
-    const savingsUSD = Math.max(0, other.total - fin.total);
+    const savingsUSD = other.total - fin.total;
     const savingsPct = other.total > 0 ? savingsUSD / other.total : 0;
 
     return { fin, other, savingsUSD, savingsPct, annual: savingsUSD * 12 };
-  }, [inNum, outNum, exchNum, autoNum, sepaNum, rates]);
+  }, [inNum, outNum, exchNum, autoNum, rates]);
 
   const showDash = requiredEmpty;
 
@@ -195,7 +185,6 @@ export default function CryptoFeeCalculator() {
           <Field label="Crypto Withdrawals (OUT)" id="out" required value={outVol} onChange={setOutVol} hint="USD" />
           <Field label="Exchange Volume (Crypto↔Crypto)" id="exch" value={exchVol} onChange={setExchVol} hint="Optional" />
           <Field label="Auto-Convert Volume" id="auto" value={autoVol} onChange={setAutoVol} hint="Optional" />
-          <Field label="SEPA Transfers (Bank OUT)" id="sepa" value={sepaVol} onChange={setSepaVol} hint="Optional" />
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-1 gap-3">
           <Stat label="Monthly Turnover" value={showDash ? "-" : formatUSD(turnover)} accent />
@@ -218,7 +207,6 @@ export default function CryptoFeeCalculator() {
               <tr><TD>Withdraw (OUT)</TD><TD right>{formatPct(rates.fin.withdraw, showDash)}</TD><TD right>{formatPct(rates.other.withdraw, showDash)}</TD></tr>
               <tr><TD>Exchange (full cycle)</TD><TD right>{formatPct(rates.fin.exchFull, showDash)}</TD><TD right>{formatPct(rates.other.exchFull, showDash)}</TD></tr>
               <tr><TD>Auto Convert</TD><TD right>{formatPct(rates.fin.auto, showDash)}</TD><TD right>{formatPct(rates.other.auto, showDash)}</TD></tr>
-              <tr><TD>SEPA OUT</TD><TD right>{formatPct(rates.fin.sepa, showDash)}</TD><TD right>{formatPct(rates.other.sepa, showDash)}</TD></tr>
             </tbody>
           </Table>
         </div>
@@ -238,7 +226,6 @@ export default function CryptoFeeCalculator() {
               <tr><TD>Withdraw (OUT)</TD><TD right>{formatUSD(fees.fin.withdraw, showDash)}</TD><TD right>{formatUSD(fees.other.withdraw, showDash)}</TD></tr>
               <tr><TD>Exchange</TD><TD right>{formatUSD(fees.fin.exchFull, showDash)}</TD><TD right>{formatUSD(fees.other.exchFull, showDash)}</TD></tr>
               <tr><TD>Auto Convert</TD><TD right>{formatUSD(fees.fin.auto, showDash)}</TD><TD right>{formatUSD(fees.other.auto, showDash)}</TD></tr>
-              <tr><TD>SEPA OUT</TD><TD right>{formatUSD(fees.fin.sepa, showDash)}</TD><TD right>{formatUSD(fees.other.sepa, showDash)}</TD></tr>
               <tr className="bg-gray-50 font-semibold"><TD>Total</TD><TD right>{formatUSD(fees.fin.total, showDash)}</TD><TD right>{formatUSD(fees.other.total, showDash)}</TD></tr>
             </tbody>
           </Table>
