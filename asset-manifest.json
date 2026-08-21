@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/crypto-fee-calculator/static/css/main.db971c51.css",
-    "main.js": "/crypto-fee-calculator/static/js/main.f84c6f36.js",
+    "main.css": "/crypto-fee-calculator/static/css/main.e7620895.css",
+    "main.js": "/crypto-fee-calculator/static/js/main.af32c89a.js",
     "static/js/453.c3302af0.chunk.js": "/crypto-fee-calculator/static/js/453.c3302af0.chunk.js",
     "index.html": "/crypto-fee-calculator/index.html",
-    "main.db971c51.css.map": "/crypto-fee-calculator/static/css/main.db971c51.css.map",
-    "main.f84c6f36.js.map": "/crypto-fee-calculator/static/js/main.f84c6f36.js.map",
+    "main.e7620895.css.map": "/crypto-fee-calculator/static/css/main.e7620895.css.map",
+    "main.af32c89a.js.map": "/crypto-fee-calculator/static/js/main.af32c89a.js.map",
     "453.c3302af0.chunk.js.map": "/crypto-fee-calculator/static/js/453.c3302af0.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.db971c51.css",
-    "static/js/main.f84c6f36.js"
+    "static/css/main.e7620895.css",
+    "static/js/main.af32c89a.js"
   ]
 }
